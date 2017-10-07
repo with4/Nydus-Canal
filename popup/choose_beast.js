@@ -26,7 +26,7 @@ If it's on a button which contains class "clear":
   Close the popup. This is needed, as the content script malfunctions after page reloads.
 */
 
-document.addEventListener("click", (e) => {
+document.addEventListener("click", function(e) {
     if (e.target.classList.contains("beast")) {
         var chosenBeast = e.target.textContent;
         var chosenBeastURL = beastNameToURL(chosenBeast);
@@ -35,13 +35,15 @@ document.addEventListener("click", (e) => {
             file: "/content_scripts/beastify.js"
         });
 
-        var gettingActiveTab = browser.tabs.query({ active: true, currentWindow: true });
-        gettingActiveTab.then((tabs) => {
+        browser.tabs.query({ active: true, currentWindow: true }, function(tabs) {
             browser.tabs.sendMessage(tabs[0].id, { beastURL: chosenBeastURL });
         });
+        return;
     }
     else if (e.target.classList.contains("clear")) {
-        browser.tabs.reload();
-        window.close();
+        browser.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            browser.tabs.executeScript(tabs[0].id, { code: 'window.location.reload();'});
+        });
+        return;
     }
 });
